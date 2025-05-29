@@ -28,12 +28,12 @@ app.use('/api/users', userRoutes);
 
 const authRoutes = require('./routes/auth.routes');
 app.use('/api/auth', authRoutes);
-// const productRoutes = require('./routes/product.routes');
-// app.use('/api/products', productRoutes);
+const productRoutes = require('./routes/product.routes');
+app.use('/api/products', productRoutes);
 // const orderRoutes = require('./routes/order.routes');   
 // app.use('/api/orders', orderRoutes);
-// const categoryRoutes = require('./routes/category.routes');
-// app.use('/api/categories', categoryRoutes);
+const categoryRoutes = require('./routes/category.routes');
+app.use('/api/categories', categoryRoutes);
 // const cartRoutes = require('./routes/cart.routes');
 // app.use('/api/carts', cartRoutes);
 // const reviewRoutes = require('./routes/review.routes');
