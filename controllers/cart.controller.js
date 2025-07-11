@@ -40,7 +40,11 @@ exports.getCurrentCart = async (req, res) => {
       where: { user_id: req.user.id, status: 'active' },
       include: {
         model: CartItem,
-        include: Product
+        as: 'CartItems',
+        include: {
+          model: Product,
+          as: 'Product'
+        }
       }
     });
 

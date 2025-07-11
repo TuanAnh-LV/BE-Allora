@@ -8,10 +8,34 @@ exports.getMyOrders = async (req, res) => {
   try {
     const orders = await Order.findAll({
       where: { user_id: req.user.id },
-      order: [['order_date', 'DESC']]
+      order: [['order_date', 'DESC']],
+      include: {
+        model: Cart,
+        as: 'Cart',
+        include: {
+          model: CartItem,
+          as: 'CartItems'
+        }
+      }
     });
 
-    const formatted = orders.map(o => o.toSafeObject());
+    const formatted = orders.map(order => {
+      const o = order.toSafeObject();
+      const cartItems = order.Cart?.CartItems || [];
+
+      const totalPrice = cartItems.reduce((sum, item) => sum + parseFloat(item.price) * item.quantity, 0);
+      const itemCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+
+      return {
+        orderId: o.orderId,
+        orderStatus: o.orderStatus,
+        paymentMethod: o.paymentMethod,
+        orderDate: o.orderDate,
+        totalPrice,
+        itemCount
+      };
+    });
+
     res.json(formatted);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -24,9 +48,14 @@ exports.getOrderDetails = async (req, res) => {
     const order = await Order.findByPk(req.params.id, {
       include: {
         model: Cart,
+        as: 'Cart',
         include: {
           model: CartItem,
-          include: Product
+          as: 'CartItems',
+          include: {
+            model: Product,
+            as: 'Product'
+          }
         }
       }
     });
@@ -55,8 +84,13 @@ exports.createOrder = async (req, res) => {
   try {
     const { paymentMethod, billingAddress } = req.body;
 
-    const cart = await Cart.findOne({ where: { user_id: req.user.id, status: 'active' } });
+    const cart = await Cart.findOne({
+      where: { user_id: req.user.id, status: 'active' },
+      include: { model: CartItem, as: 'CartItems' }
+    });
+
     if (!cart) return res.status(404).json({ message: 'No active cart found' });
+    if (!cart.CartItems.length) return res.status(400).json({ message: 'Cart is empty' });
 
     const order = await Order.create({
       cart_id: cart.cart_id,
@@ -69,8 +103,12 @@ exports.createOrder = async (req, res) => {
     cart.status = 'completed';
     await cart.save();
 
-    res.status(201).json(order.toSafeObject());
+    res.status(201).json({
+      message: 'Order created successfully',
+      orderId: order.order_id
+    });
   } catch (error) {
+    console.error('❌ Error in createOrder:', error); // ✅ Thêm dòng này để thấy lỗi rõ
     res.status(400).json({ message: error.message });
   }
 };
