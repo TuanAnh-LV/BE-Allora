@@ -1,144 +1,116 @@
-const axios = require('axios');
+const checkoutNodeJssdk = require('@paypal/checkout-server-sdk');
 const Payment = require('../models/payment.model');
 const Order = require('../models/order.model');
+const Cart = require('../models/cart.model');
+const CartItem = require('../models/cartitem.model');
 
-const PAYPAL_API = process.env.PAYPAL_API;
-const CLIENT_ID = process.env.PAYPAL_CLIENT_ID;
-const CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET;
+// PayPal config
+const environment = new checkoutNodeJssdk.core.SandboxEnvironment(
+  process.env.PAYPAL_CLIENT_ID,
+  process.env.PAYPAL_CLIENT_SECRET
+);
+const paypalClient = new checkoutNodeJssdk.core.PayPalHttpClient(environment);
 
-// Get access token
-async function getAccessToken() {
-  const auth = Buffer.from(`${CLIENT_ID}:${CLIENT_SECRET}`).toString('base64');
-  const res = await axios.post(`${PAYPAL_API}/v1/oauth2/token`, 'grant_type=client_credentials', {
-    headers: {
-      Authorization: `Basic ${auth}`,
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-  });
-  return res.data.access_token;
-}
-
-// Create PayPal order
-async function createPaypalOrder(amount, currency = 'USD') {
-  const token = await getAccessToken();
-  const res = await axios.post(`${PAYPAL_API}/v2/checkout/orders`, {
-    intent: 'CAPTURE',
-    purchase_units: [{
-      amount: { currency_code: currency, value: amount.toString() }
-    }],
-  }, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-  });
-  return res.data;
-}
-
-// Capture PayPal order
-async function capturePaypalOrder(orderId) {
-  const token = await getAccessToken();
-  const res = await axios.post(`${PAYPAL_API}/v2/checkout/orders/${orderId}/capture`, {}, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-  });
-  return res.data;
-}
-
-// PM01 - Create PayPal Order
-exports.createPaypalOrder = async (req, res) => {
+// PM01 - Checkout (tạo PayPal order)
+exports.checkout = async (req, res) => {
   try {
-    const { amount } = req.body;
-    if (!amount) return res.status(400).json({ message: 'Missing amount' });
+    const { orderId } = req.body;
 
-    const order = await createPaypalOrder(amount);
-    res.status(200).json(order);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-};
-
-// PM02 - Capture payment from PayPal
-exports.capturePaypalPayment = async (req, res) => {
-  try {
-    const { paypalOrderId, orderId } = req.body;
-    const userId = req.user.id;
-
-    if (!paypalOrderId || !orderId) {
-      return res.status(400).json({ message: 'Missing paypalOrderId or orderId' });
-    }
-
-    // 1. Find order & verify ownership
-    const order = await Order.findOne({ where: { OrderID: orderId, UserID: userId } });
+    const order = await Order.findByPk(orderId);
     if (!order) return res.status(404).json({ message: 'Order not found' });
 
-    if (order.OrderStatus === 'paid') {
-      return res.status(400).json({ message: 'Order already paid' });
+    const cart = await Cart.findByPk(order.cart_id, {
+      include: {
+        model: CartItem,
+        as: 'CartItems'
+      }
+    });
+    if (!cart || !cart.CartItems || cart.CartItems.length === 0) {
+      return res.status(400).json({ message: 'Cart is empty or not found' });
     }
 
-    // 2. Capture PayPal payment
-    const capture = await capturePaypalOrder(paypalOrderId);
-    const captureDetails = capture.purchase_units[0].payments.captures[0];
+    const totalAmount = cart.CartItems.reduce((sum, item) => {
+      return sum + item.quantity * item.price;
+    }, 0).toFixed(2);
 
-    const amount = parseFloat(captureDetails.amount.value);
-
-    // 3. Match amount with expected order amount
-    if (amount !== order.TotalAmount) {
-      return res.status(400).json({ message: 'Payment amount mismatch' });
+    if (totalAmount <= 0) {
+      return res.status(400).json({ message: 'Invalid total amount' });
     }
 
-    // 4. Save payment details
-    const payment = await Payment.create({
-      OrderID: orderId,
-      Amount: amount,
-      PaymentStatus: 'paid',
-      PaymentDate: new Date(),
-      TransactionID: captureDetails.id, // Transaction ID from PayPal
-      PayerEmail: captureDetails.payer.email_address, // Payer email from PayPal
+    // Gọi PayPal SDK để tạo đơn
+    const request = new checkoutNodeJssdk.orders.OrdersCreateRequest();
+    request.prefer('return=representation');
+    request.requestBody({
+      intent: 'CAPTURE',
+      purchase_units: [{
+        amount: {
+          currency_code: 'USD',
+          value: totalAmount
+        },
+        description: `Payment for order #${orderId}`
+      }],
+      application_context: {
+        return_url: `${process.env.FRONTEND_URL}/paypal/success?orderId=${orderId}`,
+        cancel_url: `${process.env.FRONTEND_URL}/paypal/cancel?orderId=${orderId}`
+      }
     });
 
-    // 5. Update order status
-    order.OrderStatus = 'paid';
-    await order.save();
+    const paypalOrder = await paypalClient.execute(request);
+    const approvalUrl = paypalOrder.result.links.find(link => link.rel === 'approve').href;
 
-    res.status(200).json({ message: 'Payment successful', payment });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(200).json({ approvalUrl });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to create PayPal order', error: error.message });
   }
 };
 
-// PM03 - Manual confirm payment
+
+// PM03 - Confirm payment (gọi sau khi user thanh toán thành công qua PayPal)
 exports.confirmPayment = async (req, res) => {
   try {
-    const { OrderID, Amount, PaymentStatus } = req.body;
-    const userId = req.user.id;
+    const { orderId, paypalOrderId } = req.body;
 
-    // 1. Find order & verify ownership
-    const order = await Order.findOne({ where: { OrderID, UserID: userId } });
+    const order = await Order.findByPk(orderId, {
+      include: {
+        model: Cart,
+        as: 'Cart',
+        include: {
+          model: CartItem,
+          as: 'CartItems'
+        }
+      }
+    });
     if (!order) return res.status(404).json({ message: 'Order not found' });
-
-    // 2. Check if order is already paid
-    if (order.OrderStatus === 'paid') {
+    if (order.order_status === 'paid') {
       return res.status(400).json({ message: 'Order already paid' });
     }
 
-    // 3. Save payment
+    // Capture thanh toán từ PayPal
+    const request = new checkoutNodeJssdk.orders.OrdersCaptureRequest(paypalOrderId);
+    request.requestBody({});
+    const capture = await paypalClient.execute(request);
+
+    const captureStatus = capture.result.status;
+    const captureDetails = capture.result.purchase_units[0].payments.captures[0];
+    const paidAmount = captureDetails.amount.value;
+
+    if (captureStatus !== 'COMPLETED') {
+      return res.status(400).json({ message: 'Payment not completed', status: captureStatus });
+    }
+
+    // Lưu Payment
     const payment = await Payment.create({
-      OrderID,
-      Amount,
-      PaymentStatus,
+      order_id: orderId,
+      amount: paidAmount,
+      payment_status: 'paid'
     });
 
-    // 4. Update order status if payment is confirmed
-    if (PaymentStatus === 'paid') {
-      order.OrderStatus = 'paid';
-      await order.save();
-    }
+    // Cập nhật đơn hàng
+    order.order_status = 'paid';
+    await order.save();
 
     res.status(201).json(payment);
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    res.status(500).json({ message: 'Payment confirmation failed', error: error.message });
   }
 };
