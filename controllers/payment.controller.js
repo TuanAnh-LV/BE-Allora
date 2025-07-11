@@ -109,7 +109,7 @@ exports.confirmPayment = async (req, res) => {
     order.order_status = 'paid';
     await order.save();
 
-    res.status(201).json(payment.toSafeObject());
+    res.status(201).json(payment);
   } catch (error) {
     res.status(500).json({ message: 'Payment confirmation failed', error: error.message });
   }
