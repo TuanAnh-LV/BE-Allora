@@ -7,14 +7,16 @@ const sequelize = new Sequelize(
   {
     host: process.env.DB_HOST,
     dialect: 'mssql',
+    port: 1433,
+    logging: false,
     dialectOptions: {
       options: {
-        encrypt: false 
+        encrypt: true, 
+        trustServerCertificate: true 
       }
-    },
-    port: 1433,
-    logging: false
+    }
   }
 );
+
 
 module.exports = sequelize;
