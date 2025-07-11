@@ -6,6 +6,9 @@ const sendEmail = async (to, subject, html) => {
     auth: {
       user: process.env.MAIL_USER,
       pass: process.env.MAIL_PASS
+    },
+    tls: {
+      rejectUnauthorized: false // Bỏ qua lỗi tự ký chứng chỉ (không khuyến khích trong production)
     }
   });
 
