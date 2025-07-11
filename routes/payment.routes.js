@@ -24,16 +24,16 @@ const paymentController = require('../controllers/payment.controller');
  *           schema:
  *             type: object
  *             required:
- *               - OrderID
- *               - Amount
- *               - PaymentStatus
+ *               - orderId
+ *               - amount
+ *               - paymentStatus
  *             properties:
- *               OrderID:
+ *               orderId:
  *                 type: integer
- *               Amount:
+ *               amount:
  *                 type: number
  *                 format: decimal
- *               PaymentStatus:
+ *               paymentStatus:
  *                 type: string
  *                 enum: [paid, failed, pending]
  *     responses:
@@ -42,7 +42,6 @@ const paymentController = require('../controllers/payment.controller');
  *       404:
  *         description: Order not found
  */
-
 router.post('/confirm', authenticateToken, paymentController.confirmPayment); // PM02
 
 module.exports = router;

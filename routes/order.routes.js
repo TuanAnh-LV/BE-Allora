@@ -59,13 +59,13 @@ router.get('/:id', authenticateToken, orderController.getOrderDetails); // O02
  *           schema:
  *             type: object
  *             required:
- *               - PaymentMethod
- *               - BillingAddress
+ *               - paymentMethod
+ *               - billingAddress
  *             properties:
- *               PaymentMethod:
+ *               paymentMethod:
  *                 type: string
  *                 example: VNPay
- *               BillingAddress:
+ *               billingAddress:
  *                 type: string
  *                 example: "123 Street, District 1, HCMC"
  *     responses:

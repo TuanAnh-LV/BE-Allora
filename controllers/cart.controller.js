@@ -6,28 +6,28 @@ const { Op } = require('sequelize');
 // CA01 - Add item to cart
 exports.addItemToCart = async (req, res) => {
   try {
-    const { ProductID, Quantity } = req.body;
+    const { productId, quantity } = req.body;
 
-    let cart = await Cart.findOne({ where: { UserID: req.user.id, Status: 'active' } });
+    let cart = await Cart.findOne({ where: { user_id: req.user.id, status: 'active' } });
     if (!cart) {
-      cart = await Cart.create({ UserID: req.user.id, TotalPrice: 0, Status: 'active' });
+      cart = await Cart.create({ user_id: req.user.id, total_price: 0, status: 'active' });
     }
 
-    const product = await Product.findByPk(ProductID);
+    const product = await Product.findByPk(productId);
     if (!product) return res.status(404).json({ message: 'Product not found' });
 
-    const price = product.Price;
+    const price = product.price;
     const item = await CartItem.create({
-      CartID: cart.CartID,
-      ProductID,
-      Quantity,
-      Price: price
+      cart_id: cart.cart_id,
+      product_id: productId,
+      quantity,
+      price
     });
 
-    cart.TotalPrice += price * Quantity;
+    cart.total_price += price * quantity;
     await cart.save();
 
-    res.status(201).json(item);
+    res.status(201).json(item.toSafeObject());
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -37,16 +37,23 @@ exports.addItemToCart = async (req, res) => {
 exports.getCurrentCart = async (req, res) => {
   try {
     const cart = await Cart.findOne({
-      where: { UserID: req.user.id, Status: 'active' },
+      where: { user_id: req.user.id, status: 'active' },
       include: {
         model: CartItem,
         include: Product
       }
     });
 
-    if (!cart) return res.status(200).json({ CartItems: [], TotalPrice: 0 });
+    if (!cart) return res.status(200).json({ cartItems: [], totalPrice: 0 });
 
-    res.json(cart);
+    const cartData = cart.toSafeObject();
+    cartData.cartItems = cart.CartItems.map(item => {
+      const itemData = item.toSafeObject();
+      itemData.product = item.Product?.toSafeObject?.() || null;
+      return itemData;
+    });
+
+    res.json(cartData);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -58,16 +65,16 @@ exports.updateCartItemQuantity = async (req, res) => {
     const item = await CartItem.findByPk(req.params.id);
     if (!item) return res.status(404).json({ message: 'Item not found' });
 
-    const cart = await Cart.findByPk(item.CartID);
-    cart.TotalPrice -= item.Price * item.Quantity;
+    const cart = await Cart.findByPk(item.cart_id);
+    cart.total_price -= item.price * item.quantity;
 
-    item.Quantity = req.body.Quantity;
+    item.quantity = req.body.quantity;
     await item.save();
 
-    cart.TotalPrice += item.Price * item.Quantity;
+    cart.total_price += item.price * item.quantity;
     await cart.save();
 
-    res.json(item);
+    res.json(item.toSafeObject());
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -79,8 +86,8 @@ exports.removeItemFromCart = async (req, res) => {
     const item = await CartItem.findByPk(req.params.id);
     if (!item) return res.status(404).json({ message: 'Item not found' });
 
-    const cart = await Cart.findByPk(item.CartID);
-    cart.TotalPrice -= item.Price * item.Quantity;
+    const cart = await Cart.findByPk(item.cart_id);
+    cart.total_price -= item.price * item.quantity;
     await cart.save();
 
     await item.destroy();
@@ -93,11 +100,11 @@ exports.removeItemFromCart = async (req, res) => {
 // CA05 - Clear cart
 exports.clearCart = async (req, res) => {
   try {
-    const cart = await Cart.findOne({ where: { UserID: req.user.id, Status: 'active' } });
+    const cart = await Cart.findOne({ where: { user_id: req.user.id, status: 'active' } });
     if (!cart) return res.status(404).json({ message: 'Cart not found' });
 
-    await CartItem.destroy({ where: { CartID: cart.CartID } });
-    cart.TotalPrice = 0;
+    await CartItem.destroy({ where: { cart_id: cart.cart_id } });
+    cart.total_price = 0;
     await cart.save();
 
     res.json({ message: 'Cart cleared' });

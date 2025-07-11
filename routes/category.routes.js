@@ -38,9 +38,9 @@ router.get('/', categoryController.getAllCategories);
  *           schema:
  *             type: object
  *             required:
- *               - CategoryName
+ *               - categoryName
  *             properties:
- *               CategoryName:
+ *               categoryName:
  *                 type: string
  *     responses:
  *       201:
@@ -69,7 +69,7 @@ router.post('/', authenticateToken, isAdmin, categoryController.createCategory);
  *           schema:
  *             type: object
  *             properties:
- *               CategoryName:
+ *               categoryName:
  *                 type: string
  *     responses:
  *       200:

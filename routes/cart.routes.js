@@ -25,12 +25,12 @@ const authenticateToken = require('../middlewares/auth.middleware');
  *           schema:
  *             type: object
  *             required:
- *               - ProductID
- *               - Quantity
+ *               - productId
+ *               - quantity
  *             properties:
- *               ProductID:
+ *               productId:
  *                 type: integer
- *               Quantity:
+ *               quantity:
  *                 type: integer
  *     responses:
  *       201:
@@ -78,9 +78,9 @@ router.get('/', authenticateToken, cartController.getCurrentCart);
  *           schema:
  *             type: object
  *             required:
- *               - Quantity
+ *               - quantity
  *             properties:
- *               Quantity:
+ *               quantity:
  *                 type: integer
  *     responses:
  *       200:

@@ -23,25 +23,50 @@ const authenticateToken = require('../middlewares/auth.middleware');
  *           schema:
  *             type: object
  *             required:
- *               - Username
- *               - Password
- *               - Email
+ *               - username
+ *               - password
+ *               - email
  *             properties:
- *               Username:
+ *               username:
  *                 type: string
- *               Password:
+ *               password:
  *                 type: string
- *               Email:
+ *               email:
  *                 type: string
- *               PhoneNumber:
+ *               phoneNumber:
  *                 type: string
- *               Address:
+ *               address:
  *                 type: string
- *     responses:
- *       201:
- *         description: Registration successful
- *       400:
- *         description: Username already exists
+*     responses:
+*       201:
+*         description: Registration successful
+*         content:
+*           application/json:
+*             schema:
+*               type: object
+*               properties:
+*                 message:
+*                   type: string
+*                 user:
+*                   type: object
+*                   properties:
+*                     userId:
+*                       type: integer
+*                     username:
+*                       type: string
+*                     email:
+*                       type: string
+*                     phoneNumber:
+*                       type: string
+*                     address:
+*                       type: string
+*                     role:
+*                       type: string
+*                     isVerified:
+*                       type: boolean
+*       400:
+*         description: Email already exists
+
  */
 router.post('/register', authController.register);
 
@@ -58,12 +83,12 @@ router.post('/register', authController.register);
  *           schema:
  *             type: object
  *             required:
- *               - Email
- *               - Password
+ *               - email
+ *               - password
  *             properties:
- *               Email:
+ *               email:
  *                 type: string
- *               Password:
+ *               password:
  *                 type: string
  *     responses:
  *       200:

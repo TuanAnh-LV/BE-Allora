@@ -77,22 +77,22 @@ router.get('/category/:id', productController.getProductsByCategory);
  *           schema:
  *             type: object
  *             required:
- *               - ProductName
- *               - Price
- *               - CategoryID
+ *               - productName
+ *               - price
+ *               - categoryId
  *               - image
  *             properties:
- *               ProductName:
+ *               productName:
  *                 type: string
- *               BriefDescription:
+ *               briefDescription:
  *                 type: string
- *               FullDescription:
+ *               fullDescription:
  *                 type: string
- *               TechnicalSpecifications:
+ *               technicalSpecifications:
  *                 type: string
- *               Price:
+ *               price:
  *                 type: number
- *               CategoryID:
+ *               categoryId:
  *                 type: integer
  *               image:
  *                 type: string
@@ -127,17 +127,17 @@ router.post('/', authenticateToken, isAdmin, upload.single('image'), productCont
  *           schema:
  *             type: object
  *             properties:
- *               ProductName:
+ *               productName:
  *                 type: string
- *               BriefDescription:
+ *               briefDescription:
  *                 type: string
- *               FullDescription:
+ *               fullDescription:
  *                 type: string
- *               TechnicalSpecifications:
+ *               technicalSpecifications:
  *                 type: string
- *               Price:
+ *               price:
  *                 type: number
- *               CategoryID:
+ *               categoryId:
  *                 type: integer
  *               image:
  *                 type: string

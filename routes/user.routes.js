@@ -74,13 +74,13 @@ router.get('/:id', authenticateToken, isSelfOrAdmin, userController.getUserById)
  *           schema:
  *             type: object
  *             properties:
- *               Username:
+ *               username:
  *                 type: string
- *               Email:
+ *               email:
  *                 type: string
- *               PhoneNumber:
+ *               phoneNumber:
  *                 type: string
- *               Address:
+ *               address:
  *                 type: string
  *     responses:
  *       200:
@@ -112,15 +112,15 @@ router.put('/me', authenticateToken, (req, res) => {
  *           schema:
  *             type: object
  *             properties:
- *               Username:
+ *               username:
  *                 type: string
- *               Email:
+ *               email:
  *                 type: string
- *               PhoneNumber:
+ *               phoneNumber:
  *                 type: string
- *               Address:
+ *               address:
  *                 type: string
- *               Role:
+ *               role:
  *                 type: string
  *                 description: Only Admin can change user role
  *     responses:

@@ -7,10 +7,12 @@ const Product = require('../models/product.model');
 exports.getMyOrders = async (req, res) => {
   try {
     const orders = await Order.findAll({
-      where: { UserID: req.user.id },
-      order: [['OrderDate', 'DESC']]
+      where: { user_id: req.user.id },
+      order: [['order_date', 'DESC']]
     });
-    res.json(orders);
+
+    const formatted = orders.map(o => o.toSafeObject());
+    res.json(formatted);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -20,10 +22,29 @@ exports.getMyOrders = async (req, res) => {
 exports.getOrderDetails = async (req, res) => {
   try {
     const order = await Order.findByPk(req.params.id, {
-      include: { model: Cart, include: { model: CartItem, include: Product } }
+      include: {
+        model: Cart,
+        include: {
+          model: CartItem,
+          include: Product
+        }
+      }
     });
+
     if (!order) return res.status(404).json({ message: 'Order not found' });
-    res.json(order);
+
+    const orderData = order.toSafeObject();
+    orderData.cart = order.Cart?.toSafeObject?.() || null;
+
+    if (order.Cart?.CartItems) {
+      orderData.cart.cartItems = order.Cart.CartItems.map(item => {
+        const itemData = item.toSafeObject();
+        itemData.product = item.Product?.toSafeObject?.() || null;
+        return itemData;
+      });
+    }
+
+    res.json(orderData);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -32,22 +53,23 @@ exports.getOrderDetails = async (req, res) => {
 // O03 - Create order from cart
 exports.createOrder = async (req, res) => {
   try {
-    const { PaymentMethod, BillingAddress } = req.body;
-    const cart = await Cart.findOne({ where: { UserID: req.user.id, Status: 'active' } });
+    const { paymentMethod, billingAddress } = req.body;
+
+    const cart = await Cart.findOne({ where: { user_id: req.user.id, status: 'active' } });
     if (!cart) return res.status(404).json({ message: 'No active cart found' });
 
     const order = await Order.create({
-      CartID: cart.CartID,
-      UserID: req.user.id,
-      PaymentMethod,
-      BillingAddress,
-      OrderStatus: 'processing'
+      cart_id: cart.cart_id,
+      user_id: req.user.id,
+      payment_method: paymentMethod,
+      billing_address: billingAddress,
+      order_status: 'processing'
     });
 
-    cart.Status = 'completed';
+    cart.status = 'completed';
     await cart.save();
 
-    res.status(201).json(order);
+    res.status(201).json(order.toSafeObject());
   } catch (error) {
     res.status(400).json({ message: error.message });
   }

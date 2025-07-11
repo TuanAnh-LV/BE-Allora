@@ -1,4 +1,3 @@
-// models/index.js
 const sequelize = require('../config/db');
 
 const User = require('./user.model');
@@ -42,8 +41,8 @@ Product.belongsTo(Category, { foreignKey: 'CategoryID' });
 
 // User scopes or static methods (User Functions)
 User.prototype.toSafeObject = function () {
-  const { UserID, Username, Email, Role,Address,PhoneNumber } = this;
-  return { UserID, Username, Email, Role, Address, PhoneNumber  };
+  const { UserID, Username, Email, Role, Address, PhoneNumber } = this;
+  return { UserID, Username, Email, Role, Address, PhoneNumber };
 };
 
 User.prototype.checkPassword = async function (password, bcrypt) {
