@@ -3,7 +3,8 @@ const cors = require('cors');
 const morgan = require('morgan');
 const swaggerUI = require('swagger-ui-express');
 const swaggerSpec = require('./config/swagger');
-const sequelize = require('./config/db');
+const db = require('./models'); 
+const sequelize = db.sequelize;
 const app = express();
 
 

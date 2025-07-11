@@ -12,34 +12,44 @@ const ChatMessage = require('./chatmessage.model');
 const StoreLocation = require('./storelocation.model');
 
 // Define associations
-User.hasMany(Cart, { foreignKey: 'UserID' });
-Cart.belongsTo(User, { foreignKey: 'UserID' });
 
-Cart.hasMany(CartItem, { foreignKey: 'CartID' });
-CartItem.belongsTo(Cart, { foreignKey: 'CartID' });
+// User - Cart
+User.hasMany(Cart, { foreignKey: 'UserID', as: 'Carts' });
+Cart.belongsTo(User, { foreignKey: 'UserID', as: 'User' });
 
-Product.hasMany(CartItem, { foreignKey: 'ProductID' });
-CartItem.belongsTo(Product, { foreignKey: 'ProductID' });
+// Cart - CartItem
+Cart.hasMany(CartItem, { foreignKey: 'CartID', as: 'CartItems' });
+CartItem.belongsTo(Cart, { foreignKey: 'CartID', as: 'Cart' });
 
-Cart.hasOne(Order, { foreignKey: 'CartID' });
-Order.belongsTo(Cart, { foreignKey: 'CartID' });
+// Product - CartItem
+Product.hasMany(CartItem, { foreignKey: 'ProductID', as: 'CartItems' });
+CartItem.belongsTo(Product, { foreignKey: 'ProductID', as: 'Product' });
 
-User.hasMany(Order, { foreignKey: 'UserID' });
-Order.belongsTo(User, { foreignKey: 'UserID' });
+// Cart - Order
+Cart.hasOne(Order, { foreignKey: 'CartID', as: 'Order' });
+Order.belongsTo(Cart, { foreignKey: 'CartID', as: 'Cart' });
 
-Order.hasOne(Payment, { foreignKey: 'OrderID' });
-Payment.belongsTo(Order, { foreignKey: 'OrderID' });
+// User - Order
+User.hasMany(Order, { foreignKey: 'UserID', as: 'Orders' });
+Order.belongsTo(User, { foreignKey: 'UserID', as: 'User' });
 
-User.hasMany(Notification, { foreignKey: 'UserID' });
-Notification.belongsTo(User, { foreignKey: 'UserID' });
+// Order - Payment
+Order.hasOne(Payment, { foreignKey: 'OrderID', as: 'Payment' });
+Payment.belongsTo(Order, { foreignKey: 'OrderID', as: 'Order' });
 
-User.hasMany(ChatMessage, { foreignKey: 'UserID' });
-ChatMessage.belongsTo(User, { foreignKey: 'UserID' });
+// User - Notification
+User.hasMany(Notification, { foreignKey: 'UserID', as: 'Notifications' });
+Notification.belongsTo(User, { foreignKey: 'UserID', as: 'User' });
 
-Category.hasMany(Product, { foreignKey: 'CategoryID' });
-Product.belongsTo(Category, { foreignKey: 'CategoryID' });
+// User - ChatMessage
+User.hasMany(ChatMessage, { foreignKey: 'UserID', as: 'ChatMessages' });
+ChatMessage.belongsTo(User, { foreignKey: 'UserID', as: 'User' });
 
-// User scopes or static methods (User Functions)
+// Category - Product
+Category.hasMany(Product, { foreignKey: 'CategoryID', as: 'Products' });
+Product.belongsTo(Category, { foreignKey: 'CategoryID', as: 'Category' });
+
+// User instance methods
 User.prototype.toSafeObject = function () {
   const { UserID, Username, Email, Role, Address, PhoneNumber } = this;
   return { UserID, Username, Email, Role, Address, PhoneNumber };

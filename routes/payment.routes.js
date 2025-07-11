@@ -12,7 +12,7 @@ const paymentController = require('../controllers/payment.controller');
 
 /**
  * @swagger
- * /api/payment/paypal/create-order:
+ * /api/payments/checkout:
  *   post:
  *     summary: Create a new PayPal order
  *     tags: [Payment]
@@ -25,24 +25,23 @@ const paymentController = require('../controllers/payment.controller');
  *           schema:
  *             type: object
  *             required:
- *               - amount
+ *               - orderId
  *             properties:
- *               amount:
- *                 type: number
- *                 format: decimal
+ *               orderId:
+ *                 type: integer
  *     responses:
  *       200:
  *         description: PayPal order created successfully
  *       400:
- *         description: Missing amount
+ *         description: Invalid order
  *       500:
  *         description: Internal server error
  */
-router.post('/paypal/create-order', authenticateToken, paymentController.createPaypalOrder);
+router.post('/checkout', authenticateToken, paymentController.checkout);
 
 /**
  * @swagger
- * /api/payment/paypal/capture:
+ * /api/payments/confirm:
  *   post:
  *     summary: Capture a PayPal payment and confirm it
  *     tags: [Payment]
@@ -64,49 +63,14 @@ router.post('/paypal/create-order', authenticateToken, paymentController.createP
  *               orderId:
  *                 type: integer
  *     responses:
- *       200:
+ *       201:
  *         description: Payment captured and saved successfully
  *       400:
- *         description: Missing data
+ *         description: Capture failed
  *       404:
  *         description: Order not found
  *       500:
  *         description: Internal server error
- */
-router.post('/paypal/capture', authenticateToken, paymentController.capturePaypalPayment);
-
-/**
- * @swagger
- * /api/payment/confirm:
- *   post:
- *     summary: Confirm payment and update order status
- *     tags: [Payment]
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - orderId
- *               - amount
- *               - paymentStatus
- *             properties:
- *               orderId:
- *                 type: integer
- *               amount:
- *                 type: number
- *                 format: decimal
- *               paymentStatus:
- *                 type: string
- *                 enum: [paid, failed, pending]
- *     responses:
- *       201:
- *         description: Payment confirmed and saved
- *       404:
- *         description: Order not found
  */
 router.post('/confirm', authenticateToken, paymentController.confirmPayment);
 
