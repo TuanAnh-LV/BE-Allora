@@ -50,7 +50,7 @@ const sendChatMessage = async (req, res) => {
     const newMsg = await ChatMessage.create({
       user_id: senderId,
       receiver_id: receiverId,
-      message
+      message,
     });
 
     return res.status(201).json(newMsg.toSafeObject());
@@ -59,6 +59,7 @@ const sendChatMessage = async (req, res) => {
     return res.status(500).json({ message: 'Internal server error' });
   }
 };
+
 
 module.exports = {
   getChatMessages,
