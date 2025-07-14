@@ -49,12 +49,6 @@ ChatMessage.belongsTo(User, { foreignKey: 'UserID', as: 'User' });
 Category.hasMany(Product, { foreignKey: 'CategoryID', as: 'Products' });
 Product.belongsTo(Category, { foreignKey: 'CategoryID', as: 'Category' });
 
-// User instance methods
-User.prototype.toSafeObject = function () {
-  const { UserID, Username, Email, Role, Address, PhoneNumber } = this;
-  return { UserID, Username, Email, Role, Address, PhoneNumber };
-};
-
 User.prototype.checkPassword = async function (password, bcrypt) {
   return await bcrypt.compare(password, this.PasswordHash);
 };
