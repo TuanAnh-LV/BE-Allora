@@ -108,7 +108,7 @@ exports.createOrder = async (req, res) => {
       orderId: order.order_id
     });
   } catch (error) {
-    console.error('❌ Error in createOrder:', error); // ✅ Thêm dòng này để thấy lỗi rõ
+    console.error('Error in createOrder:', error); 
     res.status(400).json({ message: error.message });
   }
 };
