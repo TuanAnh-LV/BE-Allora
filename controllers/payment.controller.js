@@ -19,6 +19,10 @@ exports.checkout = async (req, res) => {
     const order = await Order.findByPk(orderId);
     if (!order) return res.status(404).json({ message: 'Order not found' });
 
+    if (order.order_status === 'paid') {
+      return res.status(400).json({ message: 'Order has already been paid' });
+    }
+
     const cart = await Cart.findByPk(order.cart_id, {
       include: {
         model: CartItem,
