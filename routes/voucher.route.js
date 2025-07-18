@@ -25,6 +25,20 @@ router.get('/', authenticateToken, voucherController.getAllVouchers);
 
 /**
  * @swagger
+ * /api/vouchers/my:
+ *   get:
+ *     tags: [Vouchers]
+ *     summary: Get current user's vouchers
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of vouchers assigned to current user
+ */
+router.get('/my', authenticateToken, voucherController.getCurrentUserVouchers);
+
+/**
+ * @swagger
  * /api/vouchers/{id}:
  *   get:
  *     tags: [Vouchers]

@@ -1,12 +1,37 @@
 const { Sequelize } = require('sequelize');
 const Voucher = require('../models/voucher.model');
-
+const UserVoucher = require('../models/userVoucher.model');
 // [GET] All vouchers
 exports.getAllVouchers = async (req, res) => {
   try {
     const vouchers = await Voucher.findAll();
     res.status(200).json(vouchers.map(v => v.toSafeObject()));
   } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+exports.getCurrentUserVouchers = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+
+    const userVouchers = await UserVoucher.findAll({
+      where: { user_id: userId },
+      include: [
+        {
+          model: Voucher,
+          as: 'Voucher'
+        }
+      ],
+      order: [['assigned_at', 'DESC']]
+    });
+
+    res.status(200).json({
+      success: true,
+      vouchers: userVouchers.map(uv => uv.toSafeObject())
+    });
+  } catch (err) {
+    console.error('Error fetching user vouchers:', err);
     res.status(500).json({ success: false, message: err.message });
   }
 };
