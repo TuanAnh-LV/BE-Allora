@@ -16,7 +16,7 @@ exports.getUserById = async (req, res) => {
 
 // Get current logged-in user
 exports.getMe = async (req, res) => {
-  const user = await User.findByPk(req.user.id);
+  const user = await User.findByPk(req.user.userId);
   if (!user) return res.status(404).json({ message: 'User not found' });
   res.json(user.toSafeObject());
 };
@@ -66,7 +66,7 @@ exports.updateUserById = async (req, res) => {
 // Change password (self only)
 exports.changePassword = async (req, res) => {
   const { oldPassword, newPassword } = req.body;
-  const user = await User.findByPk(req.user.id);
+  const user = await User.findByPk(req.user.userId);
   if (!user) return res.status(404).json({ message: 'User not found' });
 
   const match = await user.checkPassword(oldPassword, bcrypt);

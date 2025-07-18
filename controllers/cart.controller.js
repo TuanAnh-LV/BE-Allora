@@ -8,9 +8,9 @@ exports.addItemToCart = async (req, res) => {
   try {
     const { productId, quantity } = req.body;
 
-    let cart = await Cart.findOne({ where: { user_id: req.user.id, status: 'active' } });
+    let cart = await Cart.findOne({ where: { user_id: req.user.userId, status: 'active' } });
     if (!cart) {
-      cart = await Cart.create({ user_id: req.user.id, total_price: 0, status: 'active' });
+      cart = await Cart.create({ user_id: req.user.userId, total_price: 0, status: 'active' });
     }
 
     const product = await Product.findByPk(productId);
@@ -37,7 +37,7 @@ exports.addItemToCart = async (req, res) => {
 exports.getCurrentCart = async (req, res) => {
   try {
     const cart = await Cart.findOne({
-      where: { user_id: req.user.id, status: 'active' },
+      where: { user_id: req.user.userId, status: 'active' },
       include: {
         model: CartItem,
         as: 'CartItems',
@@ -104,7 +104,7 @@ exports.removeItemFromCart = async (req, res) => {
 // CA05 - Clear cart
 exports.clearCart = async (req, res) => {
   try {
-    const cart = await Cart.findOne({ where: { user_id: req.user.id, status: 'active' } });
+    const cart = await Cart.findOne({ where: { user_id: req.user.userId, status: 'active' } });
     if (!cart) return res.status(404).json({ message: 'Cart not found' });
 
     await CartItem.destroy({ where: { cart_id: cart.cart_id } });

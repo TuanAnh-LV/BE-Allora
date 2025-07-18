@@ -7,7 +7,7 @@ const ChatMessage = require('../models/chatmessage.model');
  */
 const getChatMessages = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user.userId;
     const { otherUserId } = req.query;
 
     if (!otherUserId) {
@@ -40,7 +40,7 @@ const getChatMessages = async (req, res) => {
  */
 const sendChatMessage = async (req, res) => {
   try {
-    const senderId = req.user.id;
+    const senderId = req.user.userId;
     const { receiverId, message } = req.body;
 
     if (!receiverId || !message?.trim()) {
