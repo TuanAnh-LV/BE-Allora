@@ -66,7 +66,7 @@ exports.login = async (req, res) => {
     }
 
     const token = jwt.sign(
-      { id: user.user_id, role: user.role },
+      { userId: user.user_id, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: '1d' }
     );
@@ -101,7 +101,7 @@ exports.googleLogin = async (req, res) => {
     }
 
     const token = jwt.sign(
-      { id: user.user_id, role: user.role },
+      { userId: user.user_id, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: '1d' }
     );
@@ -119,7 +119,7 @@ exports.googleLogin = async (req, res) => {
 // Get current logged-in user info
 exports.getCurrentUser = async (req, res) => {
   try {
-    const user = await User.findByPk(req.user.id);
+    const user = await User.findByPk(req.user.userId);
     if (!user) return res.status(404).json({ message: 'User not found' });
     res.json(user.toSafeObject());
   } catch (err) {

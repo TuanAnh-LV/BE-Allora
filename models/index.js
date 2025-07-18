@@ -10,7 +10,9 @@ const Payment = require('./payment.model');
 const Notification = require('./notification.model');
 const ChatMessage = require('./chatmessage.model');
 const StoreLocation = require('./storelocation.model');
-
+const Wishlist = require('./wishlist.model');
+const Voucher = require('./voucher.model');
+const UserVoucher = require('./userVoucher.model');
 // Define associations
 
 // User - Cart
@@ -49,9 +51,24 @@ ChatMessage.belongsTo(User, { foreignKey: 'UserID', as: 'User' });
 Category.hasMany(Product, { foreignKey: 'CategoryID', as: 'Products' });
 Product.belongsTo(Category, { foreignKey: 'CategoryID', as: 'Category' });
 
+// User - Wishlist
+User.hasMany(Wishlist, { foreignKey: 'UserID', as: 'Wishlists' });
+Wishlist.belongsTo(User, { foreignKey: 'UserID', as: 'User' });
+
+// Product - Wishlist
+Product.hasMany(Wishlist, { foreignKey: 'ProductID', as: 'WishlistedBy' });
+Wishlist.belongsTo(Product, { foreignKey: 'ProductID', as: 'Product' });
+
+User.hasMany(UserVoucher, { foreignKey: 'UserID', as: 'UserVouchers' });
+UserVoucher.belongsTo(User, { foreignKey: 'UserID', as: 'User' });
+
+Voucher.hasMany(UserVoucher, { foreignKey: 'VoucherID', as: 'UserVouchers' });
+UserVoucher.belongsTo(Voucher, { foreignKey: 'VoucherID', as: 'Voucher' });
 User.prototype.checkPassword = async function (password, bcrypt) {
   return await bcrypt.compare(password, this.PasswordHash);
 };
+
+
 
 // Export all models
 module.exports = {
@@ -65,5 +82,8 @@ module.exports = {
   Payment,
   Notification,
   ChatMessage,
-  StoreLocation
+  StoreLocation,
+  Wishlist,
+  UserVoucher,
+  Voucher
 };

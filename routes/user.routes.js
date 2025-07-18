@@ -87,7 +87,7 @@ router.get('/:id', authenticateToken, isSelfOrAdmin, userController.getUserById)
  *         description: User information updated successfully
  */
 router.put('/me', authenticateToken, (req, res) => {
-  req.params.id = req.user.id;
+  req.params.id = req.user.userId;
   userController.updateUserById(req, res);
 });
 

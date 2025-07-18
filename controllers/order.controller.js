@@ -7,7 +7,7 @@ const Product = require('../models/product.model');
 exports.getMyOrders = async (req, res) => {
   try {
     const orders = await Order.findAll({
-      where: { user_id: req.user.id },
+      where: { user_id: req.user.userId },
       order: [['order_date', 'DESC']],
       include: {
         model: Cart,
@@ -85,7 +85,7 @@ exports.createOrder = async (req, res) => {
     const { paymentMethod, billingAddress } = req.body;
 
     const cart = await Cart.findOne({
-      where: { user_id: req.user.id, status: 'active' },
+      where: { user_id: req.user.userId, status: 'active' },
       include: { model: CartItem, as: 'CartItems' }
     });
 
@@ -94,7 +94,7 @@ exports.createOrder = async (req, res) => {
 
     const order = await Order.create({
       cart_id: cart.cart_id,
-      user_id: req.user.id,
+      user_id: req.user.userId,
       payment_method: paymentMethod,
       billing_address: billingAddress,
       order_status: 'processing'
