@@ -62,6 +62,8 @@ app.use('/api/vouchers', voucherRoutes);
 // app.use('/api/roles', roleRoutes);
 // const notificationRoutes = require('./routes/notification.routes');
 // app.use('/api/notifications', notificationRoutes);
-// const reviewRoutes = require('./routes/review.routes');
-// app.use('/api/reviews', reviewRoutes);
+
+const reviewRoutes = require('./routes/review.routes');
+app.use('/api/reviews', reviewRoutes);
+
 module.exports = app;
