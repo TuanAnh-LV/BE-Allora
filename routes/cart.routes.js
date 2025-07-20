@@ -129,4 +129,50 @@ router.delete('/items/:id', authenticateToken, cartController.removeItemFromCart
  */
 router.delete('/', authenticateToken, cartController.clearCart);
 
+/**
+ * @swagger
+ * /api/carts/apply-user-voucher:
+ *   post:
+ *     summary: Apply a user-assigned voucher to the current cart
+ *     tags: [Cart]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - userVoucherId
+ *             properties:
+ *               userVoucherId:
+ *                 type: integer
+ *     responses:
+ *       200:
+ *         description: Voucher applied successfully
+ *       400:
+ *         description: Voucher expired or invalid
+ *       404:
+ *         description: User voucher or cart not found
+ */
+router.post('/apply-user-voucher', authenticateToken, cartController.applyUserVoucherToCart);
+
+/**
+ * @swagger
+ * /api/carts/remove-voucher:
+ *   post:
+ *     summary: Remove the currently applied voucher from the cart
+ *     tags: [Cart]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Voucher removed from cart
+ *       404:
+ *         description: Cart not found
+ */
+router.post('/remove-voucher', authenticateToken, cartController.removeVoucherFromCart);
+
+
 module.exports = router;

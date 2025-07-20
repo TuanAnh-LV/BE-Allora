@@ -13,6 +13,7 @@ const StoreLocation = require('./storelocation.model');
 const Wishlist = require('./wishlist.model');
 const Voucher = require('./voucher.model');
 const UserVoucher = require('./userVoucher.model');
+const Review = require('./review.model');
 // Define associations
 
 // User - Cart
@@ -64,6 +65,17 @@ UserVoucher.belongsTo(User, { foreignKey: 'UserID', as: 'User' });
 
 Voucher.hasMany(UserVoucher, { foreignKey: 'VoucherID', as: 'UserVouchers' });
 UserVoucher.belongsTo(Voucher, { foreignKey: 'VoucherID', as: 'Voucher' });
+Cart.belongsTo(Voucher, { foreignKey: 'VoucherID', as: 'Voucher' });
+// Voucher.hasMany(Cart, { foreignKey: 'VoucherID', as: 'Carts' });  optional
+
+
+User.hasMany(Review, { foreignKey: 'user_id', as: 'Reviews' });
+Product.hasMany(Review, { foreignKey: 'product_id', as: 'Reviews' });
+
+Review.belongsTo(User, { foreignKey: 'user_id', as: 'User' });
+Review.belongsTo(Product, { foreignKey: 'product_id', as: 'Product' });
+
+
 User.prototype.checkPassword = async function (password, bcrypt) {
   return await bcrypt.compare(password, this.PasswordHash);
 };
