@@ -60,8 +60,8 @@ app.use('/api/vouchers', voucherRoutes);
 // app.use('/api/storelocations', storeLocationRoutes);
 // const roleRoutes = require('./routes/role.routes');
 // app.use('/api/roles', roleRoutes);
-// const notificationRoutes = require('./routes/notification.routes');
-// app.use('/api/notifications', notificationRoutes);
+const notificationRoutes = require('./routes/notification.routes');
+app.use('/api/notifications', notificationRoutes);
 
 const reviewRoutes = require('./routes/review.routes');
 app.use('/api/reviews', reviewRoutes);

@@ -21,18 +21,15 @@ exports.getMyOrders = async (req, res) => {
 
     const formatted = orders.map(order => {
       const o = order.toSafeObject();
-      const cartItems = order.Cart?.CartItems || [];
-
-      const totalPrice = cartItems.reduce((sum, item) => sum + parseFloat(item.price) * item.quantity, 0);
-      const itemCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+      const cart = order.Cart;
 
       return {
         orderId: o.orderId,
         orderStatus: o.orderStatus,
         paymentMethod: o.paymentMethod,
         orderDate: o.orderDate,
-        totalPrice,
-        itemCount
+        totalPrice: cart?.final_price || 0,
+        itemCount: cart?.CartItems?.reduce((sum, item) => sum + item.quantity, 0) || 0
       };
     });
 
