@@ -29,19 +29,18 @@ exports.checkout = async (req, res) => {
         as: 'CartItems'
       }
     });
+
     if (!cart || !cart.CartItems || cart.CartItems.length === 0) {
       return res.status(400).json({ message: 'Cart is empty or not found' });
     }
 
-    const totalAmount = cart.CartItems.reduce((sum, item) => {
-      return sum + item.quantity * item.price;
-    }, 0).toFixed(2);
-
+    // ✅ Dùng giá đã giảm (final_price)
+    const totalAmount = parseFloat(cart.final_price).toFixed(2);
     if (totalAmount <= 0) {
       return res.status(400).json({ message: 'Invalid total amount' });
     }
 
-    // Gọi PayPal SDK để tạo đơn
+    // Tạo đơn PayPal
     const request = new checkoutNodeJssdk.orders.OrdersCreateRequest();
     request.prefer('return=representation');
     request.requestBody({
@@ -69,6 +68,7 @@ exports.checkout = async (req, res) => {
 };
 
 
+
 // PM03 - Confirm payment (gọi sau khi user thanh toán thành công qua PayPal)
 exports.confirmPayment = async (req, res) => {
   try {
@@ -84,12 +84,13 @@ exports.confirmPayment = async (req, res) => {
         }
       }
     });
+
     if (!order) return res.status(404).json({ message: 'Order not found' });
     if (order.order_status === 'paid') {
       return res.status(400).json({ message: 'Order already paid' });
     }
 
-    // Capture thanh toán từ PayPal
+    // Gửi yêu cầu capture đến PayPal
     const request = new checkoutNodeJssdk.orders.OrdersCaptureRequest(paypalOrderId);
     request.requestBody({});
     const capture = await paypalClient.execute(request);
@@ -102,14 +103,14 @@ exports.confirmPayment = async (req, res) => {
       return res.status(400).json({ message: 'Payment not completed', status: captureStatus });
     }
 
-    // Lưu Payment
+    // Tạo bản ghi thanh toán
     const payment = await Payment.create({
       order_id: orderId,
       amount: paidAmount,
       payment_status: 'paid'
     });
 
-    // Cập nhật đơn hàng
+    // Cập nhật trạng thái đơn hàng
     order.order_status = 'paid';
     await order.save();
 

@@ -60,10 +60,17 @@ exports.getCurrentCart = async (req, res) => {
 
     if (!cart) return res.status(200).json({ cartItems: [], totalPrice: 0 });
 
+    const discountPercent = cart.Voucher?.discount_percent || 0;
+
     const cartData = cart.toSafeObject();
     cartData.cartItems = cart.CartItems.map(item => {
       const itemData = item.toSafeObject();
       itemData.product = item.Product?.toSafeObject?.() || null;
+
+      const originalPrice = parseFloat(item.price);
+      itemData.originalPrice = originalPrice.toFixed(2);
+      itemData.discountedPrice = (originalPrice * (1 - discountPercent / 100)).toFixed(2);
+
       return itemData;
     });
 
