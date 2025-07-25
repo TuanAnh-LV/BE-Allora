@@ -45,6 +45,64 @@ router.post('/',authenticateToken, wishlistController.addToWishlist);
  *         description: Danh sách sản phẩm yêu thích
  */
 router.get('/',authenticateToken, wishlistController.getWishlistByUser);
+
+/**
+ * @swagger
+ * /api/wishlist/{productId}:
+ *   get:
+ *     summary: Lấy chi tiết sản phẩm trong wishlist của user hiện tại
+ *     tags: [Wishlist]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: productId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID của sản phẩm
+ *     responses:
+ *       200:
+ *         description: Thông tin sản phẩm trong wishlist
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     wishlistId:
+ *                       type: integer
+ *                     productId:
+ *                       type: integer
+ *                     createdAt:
+ *                       type: string
+ *                       format: date-time
+ *                     product:
+ *                       type: object
+ *                       properties:
+ *                         productId:
+ *                           type: integer
+ *                         productName:
+ *                           type: string
+ *                         briefDescription:
+ *                           type: string
+ *                         imageUrl:
+ *                           type: string
+ *                         price:
+ *                           type: number
+ *       404:
+ *         description: Không tìm thấy trong wishlist
+ *       500:
+ *         description: Lỗi server
+ */
+router.get('/:productId', authenticateToken, wishlistController.getWishlistItemDetail);
+
+
 /**
  * @swagger
  * /api/wishlist/{productId}:
@@ -65,5 +123,6 @@ router.get('/',authenticateToken, wishlistController.getWishlistByUser);
  *         description: Removed or not found
  */
 router.delete('/:productId',authenticateToken, wishlistController.removeFromWishlist);
+
 
 module.exports = router;

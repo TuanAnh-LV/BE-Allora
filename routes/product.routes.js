@@ -25,6 +25,36 @@ router.get('/', productController.getAllProducts);
 
 /**
  * @swagger
+ * /api/products/top-selling:
+ *   get:
+ *     summary: Lấy danh sách sản phẩm bán chạy nhất
+ *     tags: [Product]
+ *     responses:
+ *       200:
+ *         description: Danh sách top sản phẩm bán chạy
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   product_id:
+ *                     type: string
+ *                   product_name:
+ *                     type: string
+ *                   price:
+ *                     type: number
+ *                   image_url:
+ *                     type: string
+ *                   totalSold:
+ *                     type: integer
+ */
+router.get('/top-selling', productController.getTopSellingProducts);
+
+
+/**
+ * @swagger
  * /api/products/{id}:
  *   get:
  *     summary: Get product details by ID

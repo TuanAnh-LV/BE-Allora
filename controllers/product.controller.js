@@ -4,6 +4,37 @@ const cloudinary = require('../config/cloudinary');
 const fs = require('fs');
 
 Product.belongsTo(Category, { foreignKey: 'category_id' });
+const { sequelize } = require('../models');
+
+exports.getTopSellingProducts = async (req, res) => {
+  try {
+    const [results] = await sequelize.query(`
+      SELECT 
+        p.ProductID AS product_id,
+        p.ProductName AS product_name,
+        p.Price AS price,
+        p.ImageURL AS image_url,
+        SUM(ci.Quantity) AS totalSold
+      FROM Orders o
+      JOIN Carts c ON o.CartID = c.CartID
+      JOIN CartItems ci ON ci.CartID = c.CartID
+      JOIN Products p ON p.ProductID = ci.ProductID
+      WHERE o.OrderStatus = N'paid'
+      GROUP BY 
+        p.ProductID, 
+        p.ProductName, 
+        p.Price, 
+        p.ImageURL
+      ORDER BY totalSold DESC
+      OFFSET 0 ROWS FETCH NEXT 10 ROWS ONLY;
+    `);
+
+    res.json(results);
+  } catch (error) {
+    console.error('Error fetching top selling products:', error);
+    res.status(500).json({ message: error.message });
+  }
+};
 
 // Get all products
 exports.getAllProducts = async (req, res) => {
