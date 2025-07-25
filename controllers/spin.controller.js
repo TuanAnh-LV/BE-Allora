@@ -73,16 +73,13 @@ exports.spinWheel = async (req, res) => {
 
     await voucher.update({ quantity: voucher.quantity - 1 });
 
-    // ==== Send notification ====
+    // ==== Sent notify ====
     const msg = `🎁 Congratulations! You just won a voucher: ${
       voucher.code
     } – ${voucher.discount_percent}% off. Valid until: ${new Date(
       voucher.expiry_date
     ).toLocaleDateString("en-GB")}`;
 
-    await sendNotification(userId, msg); 
-
-    // ==== Response ====
     return res.status(200).json({
       success: true,
       message: "Congratulations! You won a voucher!",
