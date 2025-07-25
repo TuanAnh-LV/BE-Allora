@@ -87,6 +87,40 @@ exports.removeFromWishlist = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+exports.getWishlistItemDetail = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const productId = req.params.productId;
+
+    const item = await Wishlist.findOne({
+      where: { user_id: userId, product_id: productId },
+      include: [{ model: Product, as: 'Product' }]
+    });
+
+    if (!item) {
+      return res.status(404).json({
+        success: false,
+        message: 'Item not found in wishlist'
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        wishlistId: item.wishlist_id,
+        productId: item.product_id,
+        createdAt: item.created_at,
+        product: item.Product?.toSafeObject?.() || null
+      }
+    });
+
+  } catch (error) {
+    console.error('Get wishlist item detail error:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+
 
 // Helper để định dạng dữ liệu trả về
 function formatWishlistItem(item) {
