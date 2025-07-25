@@ -55,7 +55,12 @@ exports.getWishlistByUser = async (req, res) => {
       include: [{ model: Product, as: 'Product' }]
     });
 
-    const result = wishlist.map(item => formatWishlistItem(item));
+    const result = wishlist.map(item => ({
+      wishlistId: item.wishlist_id,
+      productId: item.product_id,
+      createdAt: item.created_at,
+      product: item.Product?.toSafeObject?.() || null
+    }));
 
     res.status(200).json({
       success: true,
@@ -67,6 +72,7 @@ exports.getWishlistByUser = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
 
 // Xóa sản phẩm khỏi wishlist
 exports.removeFromWishlist = async (req, res) => {
