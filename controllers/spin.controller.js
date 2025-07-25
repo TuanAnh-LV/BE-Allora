@@ -2,6 +2,7 @@ const { Op, Sequelize } = require("sequelize");
 const Voucher = require("../models/voucher.model");
 const UserVoucher = require("../models/userVoucher.model");
 const { sendNotification } = require("../utils/notify");
+
 exports.spinWheel = async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -72,14 +73,16 @@ exports.spinWheel = async (req, res) => {
 
     await voucher.update({ quantity: voucher.quantity - 1 });
 
-    // ==== Sent notify ====
-
+    // ==== Send notification ====
     const msg = `🎁 Congratulations! You just won a voucher: ${
       voucher.code
     } – ${voucher.discount_percent}% off. Valid until: ${new Date(
       voucher.expiry_date
     ).toLocaleDateString("en-GB")}`;
 
+    await sendNotification(userId, msg); 
+
+    // ==== Response ====
     return res.status(200).json({
       success: true,
       message: "Congratulations! You won a voucher!",

@@ -49,7 +49,6 @@ exports.getVoucherById = async (req, res) => {
   }
 };
 
-// [POST] Create voucher – ✅ đã fix lỗi SQL Server ngày giờ
 exports.createVoucher = async (req, res) => {
   try {
     const { code, discountPercent, expiryDate, quantity } = req.body;
