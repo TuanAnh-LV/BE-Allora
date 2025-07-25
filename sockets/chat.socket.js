@@ -1,4 +1,5 @@
 const ChatMessage = require('../models/chatmessage.model');
+const { sendNotification } = require('../utils/notify'); 
 
 module.exports = (io) => {
   io.on('connection', (socket) => {
@@ -19,8 +20,12 @@ module.exports = (io) => {
 
         const safeMsg = newMsg.toSafeObject();
 
+        // Gửi tin nhắn realtime
         io.to(`user_${receiverId}`).emit('receive-message', safeMsg);
         socket.emit('receive-message', safeMsg);
+
+        // Gửi notification realtime
+        await sendNotification(receiverId, `New message: ${message}`);
       } catch (error) {
         console.error('ChatSocket error:', error);
         socket.emit('error-message', 'Message delivery failed');
@@ -28,7 +33,7 @@ module.exports = (io) => {
     });
 
     socket.on('disconnect', () =>  {
-      console.log('📨 ChatSocket: Client disconnected');
+      console.log('ChatSocket: Client disconnected');
     });
   });
 };

@@ -1,9 +1,9 @@
 const { Op } = require('sequelize');
 const ChatMessage = require('../models/chatmessage.model');
+const { sendNotification } = require('../utils/notify'); 
 
 /**
  * GET /api/chat/messages
- * Lấy tin nhắn giữa user đang đăng nhập và người còn lại (otherUserId)
  */
 const getChatMessages = async (req, res) => {
   try {
@@ -35,8 +35,6 @@ const getChatMessages = async (req, res) => {
 
 /**
  * POST /api/chat/messages
- * Gửi tin nhắn từ user đang đăng nhập đến receiverId
- * Body: { receiverId, message }
  */
 const sendChatMessage = async (req, res) => {
   try {
@@ -53,13 +51,14 @@ const sendChatMessage = async (req, res) => {
       message,
     });
 
+    await sendNotification(receiverId, `💬 New message: ${message}`);
+
     return res.status(201).json(newMsg.toSafeObject());
   } catch (error) {
     console.error('Error sending chat message:', error);
     return res.status(500).json({ message: 'Internal server error' });
   }
 };
-
 
 module.exports = {
   getChatMessages,
